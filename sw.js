@@ -1,4 +1,3 @@
-
 const CACHE = 'mindbridge-v8';
 const ASSETS = [
   './',
