@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>名桥 MindBridge</title>
-    <meta name="description" content="Learn Chinese through pattern recognition">
     <meta name="theme-color" content="#0f0a1e">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -15,12 +14,10 @@
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500;700;900&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-        body{font-family:'Outfit',sans-serif;overflow:hidden;height:100vh;height:100dvh}
+        body{font-family:'Outfit',sans-serif;overflow:hidden;height:100dvh}
         #root{height:100%}
         ::-webkit-scrollbar{width:4px}
         ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:2px}
@@ -28,148 +25,392 @@
         @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
         @keyframes breathe{0%,100%{opacity:0.6}50%{opacity:1}}
     </style>
-    <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(e=>console.log('SW',e));}</script>
+    <script>
+    if('serviceWorker' in navigator){
+      navigator.serviceWorker.getRegistrations().then(function(regs){
+        regs.forEach(function(r){r.unregister();});
+      });
+      if('caches' in window){
+        caches.keys().then(function(names){
+          names.forEach(function(n){caches.delete(n);});
+        });
+      }
+    }
+    </script>
 </head>
 <body>
 <div id="root"></div>
 <script type="text/babel">
-
-// ═══════════════════════════════════════
-// 名桥 MINDBRIDGE v8 — 左手鬼鬼 Edition
-// Stroke tracing · Audio stories · 8 lessons
-// ═══════════════════════════════════════
-
-const THEMES={
+var THEMES={
   cosmic:{name:"Cosmic",emoji:"🌌",bg:"linear-gradient(170deg,#0f0a1e 0%,#1a1035 40%,#1e0f2e 70%,#120a20 100%)",bgSolid:"#0f0a1e",surface:"rgba(255,255,255,0.05)",card:"rgba(255,255,255,0.06)",cardHover:"rgba(255,255,255,0.12)",header:"rgba(15,10,30,0.94)",accent:"#c4a0e8",accent2:"#e8b87a",t1:"#e8dff5",t2:"#a899c0",t3:"#7a6b94",border:"rgba(255,255,255,0.08)",font:"'Noto Sans SC',sans-serif",sBg:"#1a1035",sLine:"#c4a0e8",sGhost:"#352a4a"},
   tarot:{name:"Tarot",emoji:"🔮",bg:"linear-gradient(170deg,#141025 0%,#1f1540 40%,#251845 70%,#0f0a1e 100%)",bgSolid:"#141025",surface:"rgba(255,255,255,0.05)",card:"rgba(255,255,255,0.06)",cardHover:"rgba(255,255,255,0.12)",header:"rgba(20,16,37,0.94)",accent:"#d4a574",accent2:"#c490d6",t1:"#f0e6d8",t2:"#c0a888",t3:"#8a7a68",border:"rgba(255,255,255,0.08)",font:"'Noto Sans SC',sans-serif",sBg:"#1f1540",sLine:"#d4a574",sGhost:"#3a2a4a"},
   nebula:{name:"Nebula",emoji:"💫",bg:"linear-gradient(170deg,#0a0f1e 0%,#0f1a35 40%,#1a1040 70%,#0a0818 100%)",bgSolid:"#0a0f1e",surface:"rgba(255,255,255,0.05)",card:"rgba(255,255,255,0.06)",cardHover:"rgba(255,255,255,0.12)",header:"rgba(10,15,30,0.94)",accent:"#e8a0b8",accent2:"#80b8e8",t1:"#f0e0ea",t2:"#b898a8",t3:"#886878",border:"rgba(255,255,255,0.08)",font:"'Noto Sans SC',sans-serif",sBg:"#0f1a35",sLine:"#e8a0b8",sGhost:"#2a2040"},
-  zen:{name:"Zen",emoji:"◻️",bg:"linear-gradient(170deg,#f8f6f2 0%,#f0ece4 100%)",bgSolid:"#f8f6f2",surface:"rgba(0,0,0,0.03)",card:"rgba(0,0,0,0.04)",cardHover:"rgba(0,0,0,0.07)",header:"rgba(248,246,242,0.95)",accent:"#8a7a6a",accent2:"#a08878",t1:"#2a2520",t2:"#6a6055",t3:"#9a9088",border:"rgba(0,0,0,0.08)",font:"'Noto Sans SC',sans-serif",sBg:"#f0ece4",sLine:"#6a5a4a",sGhost:"#d4cec4"},
+  zen:{name:"Zen",emoji:"◻️",bg:"linear-gradient(170deg,#f8f6f2 0%,#f0ece4 100%)",bgSolid:"#f8f6f2",surface:"rgba(0,0,0,0.03)",card:"rgba(0,0,0,0.04)",cardHover:"rgba(0,0,0,0.07)",header:"rgba(248,246,242,0.95)",accent:"#8a7a6a",accent2:"#a08878",t1:"#2a2520",t2:"#6a6055",t3:"#9a9088",border:"rgba(0,0,0,0.08)",font:"'Noto Sans SC',sans-serif",sBg:"#f0ece4",sLine:"#6a5a4a",sGhost:"#d4cec4"}
 };
 
-const R={subject:{c:"#FF8A8A",s:"S"},verb:{c:"#6EEAE0",s:"V"},object:{c:"#FFE88A",s:"O"},particle:{c:"#BEA4F4",s:"P"},adjective:{c:"#FFB06A",s:"Adj"},adverb:{c:"#50D4E8",s:"Adv"},measure:{c:"#A88CF6",s:"MW"},time:{c:"#F4BE50",s:"T"},location:{c:"#50D4A0",s:"Loc"},question:{c:"#FF7088",s:"Q"},pronoun:{c:"#E8A0F4",s:"Pn"},negation:{c:"#FF6A6A",s:"Neg"}};
-const TC={1:"#6aaaf0",2:"#5cc47a",3:"#e8a44a",4:"#e05858",5:"#8888aa"};
-function gt(p){if(/[āēīōūǖ]/.test(p))return 1;if(/[áéíóúǘ]/.test(p))return 2;if(/[ǎěǐǒǔǚ]/.test(p))return 3;if(/[àèìòùǜ]/.test(p))return 4;return 5;}
+var R={subject:{c:"#FF8A8A",s:"S"},verb:{c:"#6EEAE0",s:"V"},object:{c:"#FFE88A",s:"O"},particle:{c:"#BEA4F4",s:"P"},adjective:{c:"#FFB06A",s:"Adj"},adverb:{c:"#50D4E8",s:"Adv"},measure:{c:"#A88CF6",s:"MW"},time:{c:"#F4BE50",s:"T"},location:{c:"#50D4A0",s:"Loc"},question:{c:"#FF7088",s:"Q"},pronoun:{c:"#E8A0F4",s:"Pn"},negation:{c:"#FF6A6A",s:"Neg"}};
+var TC={1:"#6aaaf0",2:"#5cc47a",3:"#e8a44a",4:"#e05858",5:"#8888aa"};
+function gt(p){if(/[\u0101\u0113\u012b\u014d\u016b\u01d6]/.test(p))return 1;if(/[\u00e1\u00e9\u00ed\u00f3\u00fa\u01d8]/.test(p))return 2;if(/[\u01ce\u011b\u01d0\u01d2\u01d4\u01da]/.test(p))return 3;if(/[\u00e0\u00e8\u00ec\u00f2\u00f9\u01dc]/.test(p))return 4;return 5;}
 
-const STORIES=[
-  {id:"st1",cat:"🗣️ Slang",title:"牛逼 niúbī — The Ultimate Compliment",titleP:"牛逼 niúbī — O Elogio Supremo",body:"When something blows your mind, say 牛逼 (niúbī). Literally 'cow pussy'. Means 'awesome/badass'. Polite version: just 牛. In texts: NB.",bodyP:"Quando algo te impressiona, diga 牛逼. Significa 'incrível/foda'. Versão educada: 牛. Em textos: NB.",key:"牛逼 = awesome. 牛 = polite. NB = text.",keyP:"牛逼 = incrível. 牛 = educado. NB = texto.",audio:"太牛逼了",chars:"牛逼"},
-  {id:"st2",cat:"🗣️ Slang",title:"666 liùliùliù — Smooth Operator",titleP:"666 liùliùliù — Mandou Bem",body:"In gaming, 666 = 'skilled/smooth'. 溜 (liù, slick) sounds like 六 (liù, six). Amazing play? Chat floods with 666666.",bodyP:"Em jogos, 666 = 'habilidoso'. 溜 (liù) soa como 六 (liù, seis). Jogada incrível? Chat: 666666.",key:"666 = skilled (溜 liù ≈ 六 liù)",keyP:"666 = habilidoso (溜 ≈ 六)",audio:"六六六太溜了",chars:"溜六"},
-  {id:"st3",cat:"🗣️ Slang",title:"我去 wǒ qù — Chinese WTF",titleP:"我去 wǒ qù — O WTF Chinês",body:"我去 literally 'I go' but = 'WTF/holy crap'. Stub your toe? 我去！Clean version of 我靠.",bodyP:"我去 literalmente 'eu vou' mas = 'caramba'. Versão limpa de 我靠.",key:"我去 = WTF (clean). 我靠 = stronger.",keyP:"我去 = caramba. 我靠 = mais forte.",audio:"我去这也太贵了",chars:"去"},
-  {id:"st4",cat:"📖 Culture",title:"吃了吗？— Have You Eaten?",titleP:"吃了吗？— Já Comeu?",body:"THE Chinese greeting: 你吃了吗？Not a lunch invite — it's hello. After centuries of famine, food question = caring. Answer always 吃了.",bodyP:"O cumprimento chinês: 你吃了吗？Não é convite — é 'olá'. Perguntar sobre comida = se importar.",key:"你吃了吗 = Hello ('have you eaten?')",keyP:"你吃了吗 = Olá ('já comeu?')",audio:"你吃了吗吃了吃了",chars:"吃"},
-  {id:"st5",cat:"📖 Culture",title:"面子 miànzi — The Face Game",titleP:"面子 miànzi — O Jogo da Face",body:"面子 = face/reputation. 给面子 = give face = respect. 丢面子 = lose face = embarrass. Never correct your boss in meetings.",bodyP:"面子 = reputação. 给面子 = respeitar. 丢面子 = constranger. Nunca corrija o chefe em reunião.",key:"给面子 = respect. 丢面子 = embarrass.",keyP:"给面子 = respeitar. 丢面子 = constranger.",audio:"给他一个面子吧",chars:"面子"},
-  {id:"st6",cat:"🗣️ Slang",title:"加油 jiāyóu — Add Oil!",titleP:"加油 jiāyóu — Adiciona Óleo!",body:"加油 = 'add oil/fuel' — THE encouragement phrase. In Oxford Dictionary since 2018. 'You got this' + 'keep going' in one word.",bodyP:"加油 = 'adicionar óleo' — encorajamento. No Oxford desde 2018.",key:"加油 = You got this! Go for it!",keyP:"加油 = Vai lá! Força!",audio:"加油加油你可以的",chars:"加油"},
-  {id:"st7",cat:"📖 Culture",title:"红包 hóngbāo — Red Envelopes",titleP:"红包 hóngbāo — Envelopes Vermelhos",body:"红包 = red envelope with money. ALWAYS even amounts. NEVER ¥4 (四≈死 death). 8 = prosperity. ¥5.20 = 我爱你 (520 sounds like it).",bodyP:"红包 = envelope com dinheiro. SEMPRE pares. NUNCA ¥4 (四≈死 morte). ¥5.20 = 我爱你.",key:"红包 = red envelope. No 4! 520 = love.",keyP:"红包 = envelope. Sem 4! 520 = amor.",audio:"恭喜发财红包拿来",chars:"红包"},
-  {id:"st8",cat:"🗣️ Slang",title:"打卡 dǎkǎ — Check In Culture",titleP:"打卡 dǎkǎ — Cultura do Check-in",body:"打卡 meant 'punch timecard'. Now = social media check-ins. 网红打卡地 = influencer spots.",bodyP:"打卡 significava 'bater ponto'. Agora = check-in. 网红打卡地 = pontos de influencers.",key:"打卡 = check in. 网红 = influencer.",keyP:"打卡 = check-in. 网红 = influencer.",audio:"今天打卡一个网红餐厅",chars:"打卡"},
-  {id:"st9",cat:"📖 Culture",title:"差不多 chàbuduō — Close Enough",titleP:"差不多 chàbuduō — Quase Lá",body:"差不多 = almost/close enough. THE Chinese concept. 30 min late? 差不多是准时! Like 'mais ou menos' on steroids.",bodyP:"差不多 = quase/mais ou menos. 30 min atrasado? 差不多是准时!",key:"差不多 = close enough / good enough.",keyP:"差不多 = quase / mais ou menos.",audio:"差不多就行了",chars:"差不多"},
-  {id:"st10",cat:"🗣️ Slang",title:"躺平 tǎng píng — Lie Flat",titleP:"躺平 tǎng píng — Deitar e Desistir",body:"躺平 = lie flat — Chinese quiet quitting. 996 culture pushed youth to 'just lie flat'. 摆烂 = 'let it rot' — more extreme.",bodyP:"躺平 = 'desistência silenciosa'. Cultura 996. 摆烂 = 'deixar apodrecer'.",key:"躺平 = quit hustling. 摆烂 = let it rot.",keyP:"躺平 = desistir. 摆烂 = apodrecer.",audio:"我今天就想躺平",chars:"躺平"},
+var STORIES=[
+  {id:"st1",cat:"Slang",title:"\u725b\u903c ni\u00fab\u012b \u2014 The Ultimate Compliment",body:"When something blows your mind, say \u725b\u903c. Literally 'cow pussy'. Means awesome/badass. Polite version: just \u725b. In texts: NB.",key:"\u725b\u903c = awesome. \u725b = polite. NB = text.",audio:"\u592a\u725b\u903c\u4e86",chars:"\u725b\u903c"},
+  {id:"st2",cat:"Slang",title:"666 li\u00f9li\u00f9li\u00f9 \u2014 Smooth Operator",body:"In gaming, 666 = skilled/smooth. \u6e9c (li\u00f9, slick) sounds like \u516d (li\u00f9, six). Amazing play? Chat: 666666.",key:"666 = skilled (\u6e9c \u2248 \u516d)",audio:"\u516d\u516d\u516d\u592a\u6e9c\u4e86",chars:"\u6e9c\u516d"},
+  {id:"st3",cat:"Slang",title:"\u6211\u53bb w\u01d2 q\u00f9 \u2014 Chinese WTF",body:"\u6211\u53bb literally 'I go' but = WTF/holy crap. Clean version of \u6211\u9760.",key:"\u6211\u53bb = WTF (clean). \u6211\u9760 = stronger.",audio:"\u6211\u53bb\u8fd9\u4e5f\u592a\u8d35\u4e86",chars:"\u53bb"},
+  {id:"st4",cat:"Culture",title:"\u5403\u4e86\u5417 \u2014 Have You Eaten?",body:"THE Chinese greeting: \u4f60\u5403\u4e86\u5417\uff1fNot a lunch invite \u2014 it's hello. After centuries of famine, asking about food = caring.",key:"\u4f60\u5403\u4e86\u5417 = Hello",audio:"\u4f60\u5403\u4e86\u5417\u5403\u4e86\u5403\u4e86",chars:"\u5403"},
+  {id:"st5",cat:"Culture",title:"\u9762\u5b50 mi\u00e0nzi \u2014 The Face Game",body:"\u9762\u5b50 = face/reputation. \u7ed9\u9762\u5b50 = give respect. \u4e22\u9762\u5b50 = embarrass. Never correct your boss in meetings.",key:"\u7ed9\u9762\u5b50 = respect. \u4e22\u9762\u5b50 = embarrass.",audio:"\u7ed9\u4ed6\u4e00\u4e2a\u9762\u5b50\u5427",chars:"\u9762\u5b50"},
+  {id:"st6",cat:"Slang",title:"\u52a0\u6cb9 ji\u0101y\u00f3u \u2014 Add Oil!",body:"\u52a0\u6cb9 = add oil/fuel \u2014 THE encouragement phrase. In Oxford Dictionary since 2018.",key:"\u52a0\u6cb9 = You got this!",audio:"\u52a0\u6cb9\u52a0\u6cb9\u4f60\u53ef\u4ee5\u7684",chars:"\u52a0\u6cb9"},
+  {id:"st7",cat:"Culture",title:"\u7ea2\u5305 h\u00f3ngb\u0101o \u2014 Red Envelopes",body:"\u7ea2\u5305 = red envelope with money. ALWAYS even amounts. NEVER 4 (\u56db\u2248\u6b7b death). 8 = prosperity.",key:"\u7ea2\u5305 = red envelope. No 4! 520 = love.",audio:"\u606d\u559c\u53d1\u8d22\u7ea2\u5305\u62ff\u6765",chars:"\u7ea2\u5305"},
+  {id:"st8",cat:"Slang",title:"\u6253\u5361 d\u01cek\u01ce \u2014 Check In Culture",body:"\u6253\u5361 meant 'punch timecard'. Now = checking into trendy spots for social media.",key:"\u6253\u5361 = check in. \u7f51\u7ea2 = influencer.",audio:"\u4eca\u5929\u6253\u5361\u4e00\u4e2a\u7f51\u7ea2\u9910\u5385",chars:"\u6253\u5361"},
+  {id:"st9",cat:"Culture",title:"\u5dee\u4e0d\u591a ch\u00e0bud\u016b\u014d \u2014 Close Enough",body:"\u5dee\u4e0d\u591a = almost/close enough. THE Chinese concept. Like 'mais ou menos' on steroids.",key:"\u5dee\u4e0d\u591a = close enough.",audio:"\u5dee\u4e0d\u591a\u5c31\u884c\u4e86",chars:"\u5dee\u4e0d\u591a"},
+  {id:"st10",cat:"Slang",title:"\u8eba\u5e73 t\u01ceng p\u00edng \u2014 Lie Flat",body:"\u8eba\u5e73 = lie flat \u2014 Chinese quiet quitting. 996 culture pushed youth to just lie flat. \u6446\u70c2 = let it rot.",key:"\u8eba\u5e73 = quit hustling. \u6446\u70c2 = let it rot.",audio:"\u6211\u4eca\u5929\u5c31\u60f3\u8eba\u5e73",chars:"\u8eba\u5e73"}
 ];
 
-const LESSONS=[
-  {id:1,title:"Greetings",tz:"问候",ss:[
-    {w:[{h:"你",p:"nǐ",e:"you",pt:"você",r:"subject"},{h:"好",p:"hǎo",e:"good",pt:"bom/boa",r:"adjective"}],col:"嗨 (hāi) — from English 'hi'",colP:"嗨 — do inglês 'hi'",n:"Literally 'You good'. No verb needed!",nP:"Literalmente 'Você bom'. Sem verbo!"},
-    {w:[{h:"我",p:"wǒ",e:"I",pt:"eu",r:"subject"},{h:"叫",p:"jiào",e:"am called",pt:"me chamo",r:"verb"},{h:"鬼鬼",p:"Guǐguǐ",e:"Guigui",pt:"Guigui",r:"object"}],col:"我是鬼鬼 — 是=am (more direct)",colP:"我是鬼鬼 — 是=sou (mais direto)",n:"我叫 = 'I am called'. 鬼 = ghost/spirit — 左手鬼鬼!",nP:"我叫 = 'Me chamo'. 鬼 = fantasma/espírito!"},
-    {w:[{h:"你",p:"nǐ",e:"you",pt:"você",r:"subject"},{h:"叫",p:"jiào",e:"called",pt:"chama",r:"verb"},{h:"什么",p:"shénme",e:"what",pt:"o quê",r:"question"},{h:"名字",p:"míngzi",e:"name",pt:"nome",r:"object"}],col:"你叫啥？— 啥 replaces 什么",colP:"你叫啥？— 啥 substitui 什么",n:"什么 goes WHERE the answer goes! 你叫[什么]→我叫[鬼鬼]",nP:"什么 fica ONDE a resposta vai!"},
-    {w:[{h:"很",p:"hěn",e:"very",pt:"muito",r:"adverb"},{h:"高兴",p:"gāoxìng",e:"happy",pt:"feliz",r:"adjective"},{h:"认识",p:"rènshi",e:"to meet",pt:"conhecer",r:"verb"},{h:"你",p:"nǐ",e:"you",pt:"você",r:"object"}],col:"幸会幸会 — literary/formal",colP:"幸会幸会 — literário",n:"很 before adjectives is grammar glue, not emphasis!",nP:"很 antes de adjetivos é gramática!"},
+var LESSONS=[
+  {id:1,title:"Greetings",tz:"\u95ee\u5019",ss:[
+    {w:[{h:"\u4f60",p:"n\u01d0",e:"you",pt:"voc\u00ea",r:"subject"},{h:"\u597d",p:"h\u01ceo",e:"good",pt:"bom",r:"adjective"}],col:"\u55e8 (h\u0101i) \u2014 from English hi",n:"Literally 'You good'. No verb needed!"},
+    {w:[{h:"\u6211",p:"w\u01d2",e:"I",pt:"eu",r:"subject"},{h:"\u53eb",p:"ji\u00e0o",e:"am called",pt:"me chamo",r:"verb"},{h:"\u9b3c\u9b3c",p:"Gu\u01d0gu\u012b",e:"Guigui",pt:"Guigui",r:"object"}],col:"\u6211\u662f\u9b3c\u9b3c \u2014 \u662f=am (direct)",n:"\u6211\u53eb = I am called. \u9b3c = ghost/spirit \u2014 \u5de6\u624b\u9b3c!"},
+    {w:[{h:"\u4f60",p:"n\u01d0",e:"you",pt:"voc\u00ea",r:"subject"},{h:"\u53eb",p:"ji\u00e0o",e:"called",pt:"chama",r:"verb"},{h:"\u4ec0\u4e48",p:"sh\u00e9nme",e:"what",pt:"o qu\u00ea",r:"question"},{h:"\u540d\u5b57",p:"m\u00edngzi",e:"name",pt:"nome",r:"object"}],col:"\u4f60\u53eb\u5565\uff1f\u2014 \u5565 replaces \u4ec0\u4e48",n:"\u4ec0\u4e48 goes WHERE the answer goes!"},
+    {w:[{h:"\u5f88",p:"h\u011bn",e:"very",pt:"muito",r:"adverb"},{h:"\u9ad8\u5174",p:"g\u0101ox\u00ecng",e:"happy",pt:"feliz",r:"adjective"},{h:"\u8ba4\u8bc6",p:"r\u00e8nshi",e:"to meet",pt:"conhecer",r:"verb"},{h:"\u4f60",p:"n\u01d0",e:"you",pt:"voc\u00ea",r:"object"}],col:"\u5e78\u4f1a\u5e78\u4f1a \u2014 literary/formal",n:"\u5f88 before adjectives is grammar glue, not emphasis!"}
   ]},
-  {id:2,title:"Daily Life",tz:"日常",ss:[
-    {w:[{h:"我",p:"wǒ",e:"I",pt:"eu",r:"subject"},{h:"今天",p:"jīntiān",e:"today",pt:"hoje",r:"time"},{h:"很",p:"hěn",e:"very",pt:"muito",r:"adverb"},{h:"忙",p:"máng",e:"busy",pt:"ocupado",r:"adjective"}],col:"今儿忙死了 — busy to death",colP:"今儿忙死了 — ocupado de morrer",n:"Time ALWAYS before verb: S + TIME + desc.",nP:"Tempo SEMPRE antes: S + TEMPO + desc."},
-    {w:[{h:"我",p:"wǒ",e:"I",pt:"eu",r:"subject"},{h:"不",p:"bù",e:"not",pt:"não",r:"negation"},{h:"喝",p:"hē",e:"drink",pt:"beber",r:"verb"},{h:"咖啡",p:"kāfēi",e:"coffee",pt:"café",r:"object"}],col:"咖啡我不碰 — topic-front!",colP:"咖啡我不碰 — tópico à frente!",n:"不 before verb = negation. 咖啡 ≈ café — same origin!",nP:"不 antes do verbo = negação. 咖啡 ≈ café!"},
-    {w:[{h:"我们",p:"wǒmen",e:"we",pt:"nós",r:"subject"},{h:"明天",p:"míngtiān",e:"tomorrow",pt:"amanhã",r:"time"},{h:"去",p:"qù",e:"go",pt:"ir",r:"verb"},{h:"看",p:"kàn",e:"see",pt:"ver",r:"verb"},{h:"电影",p:"diànyǐng",e:"movie",pt:"filme",r:"object"}],col:"明儿看电影去",colP:"明儿看电影去",n:"去看 = go+see. No tenses — 明天 handles time!",nP:"去看 = ir+ver. Sem tempos verbais!"},
+  {id:2,title:"Daily Life",tz:"\u65e5\u5e38",ss:[
+    {w:[{h:"\u6211",p:"w\u01d2",e:"I",pt:"eu",r:"subject"},{h:"\u4eca\u5929",p:"j\u012bnti\u0101n",e:"today",pt:"hoje",r:"time"},{h:"\u5f88",p:"h\u011bn",e:"very",pt:"muito",r:"adverb"},{h:"\u5fd9",p:"m\u00e1ng",e:"busy",pt:"ocupado",r:"adjective"}],col:"\u4eca\u513f\u5fd9\u6b7b\u4e86 \u2014 busy to death",n:"Time ALWAYS before verb: S + TIME + desc."},
+    {w:[{h:"\u6211",p:"w\u01d2",e:"I",pt:"eu",r:"subject"},{h:"\u4e0d",p:"b\u00f9",e:"not",pt:"n\u00e3o",r:"negation"},{h:"\u559d",p:"h\u0113",e:"drink",pt:"beber",r:"verb"},{h:"\u5496\u5561",p:"k\u0101f\u0113i",e:"coffee",pt:"caf\u00e9",r:"object"}],col:"\u5496\u5561\u6211\u4e0d\u78b0 \u2014 topic-front!",n:"\u4e0d before verb = negation. \u5496\u5561 \u2248 caf\u00e9!"},
+    {w:[{h:"\u6211\u4eec",p:"w\u01d2men",e:"we",pt:"n\u00f3s",r:"subject"},{h:"\u660e\u5929",p:"m\u00edngti\u0101n",e:"tomorrow",pt:"amanh\u00e3",r:"time"},{h:"\u53bb",p:"q\u00f9",e:"go",pt:"ir",r:"verb"},{h:"\u770b",p:"k\u00e0n",e:"see",pt:"ver",r:"verb"},{h:"\u7535\u5f71",p:"di\u00e0ny\u01d0ng",e:"movie",pt:"filme",r:"object"}],col:"\u660e\u513f\u770b\u7535\u5f71\u53bb",n:"\u53bb\u770b = go+see. No tenses!"}
   ]},
-  {id:3,title:"Shopping",tz:"购物",ss:[
-    {w:[{h:"这",p:"zhè",e:"this",pt:"este/a",r:"pronoun"},{h:"个",p:"gè",e:"[MW]",pt:"[cl.]",r:"measure"},{h:"多少",p:"duōshao",e:"how much",pt:"quanto",r:"question"},{h:"钱",p:"qián",e:"money",pt:"dinheiro",r:"object"}],col:"这咋卖的？",colP:"这咋卖的？",n:"个 = universal measure word. Between number + noun.",nP:"个 = classificador universal."},
-    {w:[{h:"太",p:"tài",e:"too",pt:"demais",r:"adverb"},{h:"贵",p:"guì",e:"expensive",pt:"caro",r:"adjective"},{h:"了",p:"le",e:"[change!]",pt:"[mudança!]",r:"particle"}],col:"好贵啊！",colP:"好贵啊！",n:"了 = CHANGE marker, NOT past tense! It became expensive.",nP:"了 = MUDANÇA, NÃO passado!"},
-    {w:[{h:"可以",p:"kěyǐ",e:"can",pt:"pode",r:"verb"},{h:"便宜",p:"piányi",e:"cheaper",pt:"barato",r:"adjective"},{h:"一点",p:"yìdiǎn",e:"a little",pt:"um pouco",r:"adverb"},{h:"吗",p:"ma",e:"[yes/no?]",pt:"[sim/não?]",r:"particle"}],col:"能不能便宜点儿？",colP:"能不能便宜点儿？",n:"吗 = yes/no question. 能不能 = can-not-can pattern.",nP:"吗 = sim/não. 能不能 = pode-não-pode?"},
+  {id:3,title:"Shopping",tz:"\u8d2d\u7269",ss:[
+    {w:[{h:"\u8fd9",p:"zh\u00e8",e:"this",pt:"este",r:"pronoun"},{h:"\u4e2a",p:"g\u00e8",e:"[MW]",pt:"[cl.]",r:"measure"},{h:"\u591a\u5c11",p:"du\u014dshao",e:"how much",pt:"quanto",r:"question"},{h:"\u94b1",p:"qi\u00e1n",e:"money",pt:"dinheiro",r:"object"}],col:"\u8fd9\u548b\u5356\u7684\uff1f",n:"\u4e2a = universal measure word."},
+    {w:[{h:"\u592a",p:"t\u00e0i",e:"too",pt:"demais",r:"adverb"},{h:"\u8d35",p:"gu\u00ec",e:"expensive",pt:"caro",r:"adjective"},{h:"\u4e86",p:"le",e:"[change!]",pt:"[!]",r:"particle"}],col:"\u597d\u8d35\u554a\uff01",n:"\u4e86 = CHANGE marker, NOT past tense!"},
+    {w:[{h:"\u53ef\u4ee5",p:"k\u011by\u01d0",e:"can",pt:"pode",r:"verb"},{h:"\u4fbf\u5b9c",p:"pi\u00e1nyi",e:"cheaper",pt:"barato",r:"adjective"},{h:"\u4e00\u70b9",p:"y\u00ecd\u01d0\u01cen",e:"a little",pt:"um pouco",r:"adverb"},{h:"\u5417",p:"ma",e:"[yes/no?]",pt:"[?]",r:"particle"}],col:"\u80fd\u4e0d\u80fd\u4fbf\u5b9c\u70b9\u513f\uff1f",n:"\u5417 = yes/no question. \u80fd\u4e0d\u80fd = can-not-can?"}
   ]},
-  {id:4,title:"Food",tz:"吃饭",ss:[
-    {w:[{h:"我",p:"wǒ",e:"I",pt:"eu",r:"subject"},{h:"想",p:"xiǎng",e:"want",pt:"quero",r:"verb"},{h:"吃",p:"chī",e:"eat",pt:"comer",r:"verb"},{h:"火锅",p:"huǒguō",e:"hotpot",pt:"hotpot",r:"object"}],col:"整点火锅",colP:"整点火锅 — bora hotpot",n:"想+verb = want to. Stack verbs freely!",nP:"想+verbo = querer."},
-    {w:[{h:"这",p:"zhè",e:"this",pt:"isto",r:"pronoun"},{h:"个",p:"gè",e:"[MW]",pt:"[cl.]",r:"measure"},{h:"菜",p:"cài",e:"dish",pt:"prato",r:"object"},{h:"太",p:"tài",e:"too",pt:"demais",r:"adverb"},{h:"辣",p:"là",e:"spicy",pt:"picante",r:"adjective"},{h:"了",p:"le",e:"[!]",pt:"[!]",r:"particle"}],col:"辣死我了！",colP:"辣死我了！",n:"太...了 = excessively. 死了 = 'to death' emphasis!",nP:"太...了 = demais. 死了 = 'de morrer'!"},
-    {w:[{h:"服务员",p:"fúwùyuán",e:"waiter",pt:"garçom",r:"object"},{h:"买单",p:"mǎidān",e:"bill",pt:"conta",r:"verb"}],col:"结账 — northern style",colP:"结账 — estilo do norte",n:"服务员! = calling waiter. Not rude in China!",nP:"服务员! Não é rude na China!"},
+  {id:4,title:"Food",tz:"\u5403\u996d",ss:[
+    {w:[{h:"\u6211",p:"w\u01d2",e:"I",pt:"eu",r:"subject"},{h:"\u60f3",p:"xi\u01ceng",e:"want",pt:"quero",r:"verb"},{h:"\u5403",p:"ch\u012b",e:"eat",pt:"comer",r:"verb"},{h:"\u706b\u9505",p:"hu\u01d2gu\u014d",e:"hotpot",pt:"hotpot",r:"object"}],col:"\u6574\u70b9\u706b\u9505",n:"\u60f3+verb = want to. Stack verbs!"},
+    {w:[{h:"\u8fd9",p:"zh\u00e8",e:"this",pt:"isto",r:"pronoun"},{h:"\u4e2a",p:"g\u00e8",e:"[MW]",pt:"[cl.]",r:"measure"},{h:"\u83dc",p:"c\u00e0i",e:"dish",pt:"prato",r:"object"},{h:"\u592a",p:"t\u00e0i",e:"too",pt:"demais",r:"adverb"},{h:"\u8fa3",p:"l\u00e0",e:"spicy",pt:"picante",r:"adjective"},{h:"\u4e86",p:"le",e:"[!]",pt:"[!]",r:"particle"}],col:"\u8fa3\u6b7b\u6211\u4e86\uff01",n:"\u592a...\u4e86 = excessively. \u6b7b\u4e86 = to death!"},
+    {w:[{h:"\u670d\u52a1\u5458",p:"f\u00faw\u00f9yu\u00e1n",e:"waiter",pt:"gar\u00e7om",r:"object"},{h:"\u4e70\u5355",p:"m\u01ced\u0101n",e:"the bill",pt:"a conta",r:"verb"}],col:"\u7ed3\u8d26 \u2014 northern style",n:"\u670d\u52a1\u5458! Not rude in China!"}
   ]},
-  {id:5,title:"Transport",tz:"交通",ss:[
-    {w:[{h:"我",p:"wǒ",e:"I",pt:"eu",r:"subject"},{h:"要",p:"yào",e:"need to",pt:"preciso",r:"verb"},{h:"去",p:"qù",e:"go to",pt:"ir",r:"verb"},{h:"机场",p:"jīchǎng",e:"airport",pt:"aeroporto",r:"location"}],col:"走，去机场",colP:"走，去机场 — bora",n:"要+verb = will/need. Stronger than 想.",nP:"要+verbo. Mais forte que 想."},
-    {w:[{h:"地铁",p:"dìtiě",e:"subway",pt:"metrô",r:"object"},{h:"站",p:"zhàn",e:"station",pt:"estação",r:"object"},{h:"在",p:"zài",e:"is at",pt:"fica",r:"verb"},{h:"哪里",p:"nǎlǐ",e:"where",pt:"onde",r:"question"}],col:"地铁在哪儿？",colP:"地铁在哪儿？",n:"在+哪里 = is where? Same swap pattern!",nP:"在+哪里 = onde fica?"},
-    {w:[{h:"师傅",p:"shīfu",e:"driver",pt:"motorista",r:"subject"},{h:"请",p:"qǐng",e:"please",pt:"por favor",r:"adverb"},{h:"开",p:"kāi",e:"drive",pt:"dirigir",r:"verb"},{h:"慢",p:"màn",e:"slow",pt:"devagar",r:"adverb"},{h:"一点",p:"yìdiǎn",e:"a bit",pt:"um pouco",r:"adverb"}],col:"慢点儿开！",colP:"慢点儿开！",n:"师傅 = respectful for skilled workers!",nP:"师傅 = respeitoso!"},
+  {id:5,title:"Transport",tz:"\u4ea4\u901a",ss:[
+    {w:[{h:"\u6211",p:"w\u01d2",e:"I",pt:"eu",r:"subject"},{h:"\u8981",p:"y\u00e0o",e:"need to",pt:"preciso",r:"verb"},{h:"\u53bb",p:"q\u00f9",e:"go to",pt:"ir",r:"verb"},{h:"\u673a\u573a",p:"j\u012bch\u01ceng",e:"airport",pt:"aeroporto",r:"location"}],col:"\u8d70\uff0c\u53bb\u673a\u573a",n:"\u8981+verb = will/need. Stronger than \u60f3."},
+    {w:[{h:"\u5730\u94c1",p:"d\u00ecti\u011b",e:"subway",pt:"metr\u00f4",r:"object"},{h:"\u7ad9",p:"zh\u00e0n",e:"station",pt:"esta\u00e7\u00e3o",r:"object"},{h:"\u5728",p:"z\u00e0i",e:"is at",pt:"fica",r:"verb"},{h:"\u54ea\u91cc",p:"n\u01cel\u01d0",e:"where",pt:"onde",r:"question"}],col:"\u5730\u94c1\u5728\u54ea\u513f\uff1f",n:"\u5728+\u54ea\u91cc = is where?"},
+    {w:[{h:"\u5e08\u5085",p:"sh\u012bfu",e:"driver",pt:"motorista",r:"subject"},{h:"\u8bf7",p:"q\u01d0ng",e:"please",pt:"por favor",r:"adverb"},{h:"\u5f00",p:"k\u0101i",e:"drive",pt:"dirigir",r:"verb"},{h:"\u6162",p:"m\u00e0n",e:"slow",pt:"devagar",r:"adverb"},{h:"\u4e00\u70b9",p:"y\u00ecd\u01d0\u01cen",e:"a bit",pt:"um pouco",r:"adverb"}],col:"\u6162\u70b9\u513f\u5f00\uff01",n:"\u5e08\u5085 = respectful for skilled workers!"}
   ]},
-  {id:6,title:"Family",tz:"家人",ss:[
-    {w:[{h:"这",p:"zhè",e:"this",pt:"esta",r:"pronoun"},{h:"是",p:"shì",e:"is",pt:"é",r:"verb"},{h:"我",p:"wǒ",e:"my",pt:"minha",r:"subject"},{h:"女儿",p:"nǚ'ér",e:"daughter",pt:"filha",r:"object"}],col:"这我闺女 — casual",colP:"这我闺女 — casual",n:"是 = to be. The ONLY true 'is' verb in Chinese.",nP:"是 = ser. O ÚNICO 'ser' real em chinês."},
-    {w:[{h:"她",p:"tā",e:"she",pt:"ela",r:"subject"},{h:"很",p:"hěn",e:"very",pt:"muito",r:"adverb"},{h:"聪明",p:"cōngming",e:"smart",pt:"inteligente",r:"adjective"}],col:"她贼聪明 — 贼=crazy smart",colP:"她贼聪明 — 贼=super",n:"她他它 all = tā! Only writing differs.",nP:"她他它 soam igual: tā!"},
-    {w:[{h:"我",p:"wǒ",e:"I",pt:"eu",r:"subject"},{h:"爱",p:"ài",e:"love",pt:"amo",r:"verb"},{h:"我的",p:"wǒ de",e:"my",pt:"minha",r:"pronoun"},{h:"家",p:"jiā",e:"family",pt:"família",r:"object"}],col:"家人最重要 — family #1",colP:"家人最重要 — família #1",n:"的 = possessive. 我的=my. 你的=your.",nP:"的 = possessivo. 我的=meu."},
+  {id:6,title:"Family",tz:"\u5bb6\u4eba",ss:[
+    {w:[{h:"\u8fd9",p:"zh\u00e8",e:"this",pt:"esta",r:"pronoun"},{h:"\u662f",p:"sh\u00ec",e:"is",pt:"\u00e9",r:"verb"},{h:"\u6211",p:"w\u01d2",e:"my",pt:"minha",r:"subject"},{h:"\u5973\u513f",p:"n\u01da\u2019\u00e9r",e:"daughter",pt:"filha",r:"object"}],col:"\u8fd9\u6211\u95fa\u5973 \u2014 casual",n:"\u662f = to be. The ONLY true 'is' verb in Chinese."},
+    {w:[{h:"\u5979",p:"t\u0101",e:"she",pt:"ela",r:"subject"},{h:"\u5f88",p:"h\u011bn",e:"very",pt:"muito",r:"adverb"},{h:"\u806a\u660e",p:"c\u014dngming",e:"smart",pt:"inteligente",r:"adjective"}],col:"\u5979\u8d3c\u806a\u660e \u2014 \u8d3c=crazy/super",n:"\u5979\u4ed6\u5b83 all sound tā! Only writing differs."},
+    {w:[{h:"\u6211",p:"w\u01d2",e:"I",pt:"eu",r:"subject"},{h:"\u7231",p:"\u00e0i",e:"love",pt:"amo",r:"verb"},{h:"\u6211\u7684",p:"w\u01d2 de",e:"my",pt:"minha",r:"pronoun"},{h:"\u5bb6",p:"ji\u0101",e:"family",pt:"fam\u00edlia",r:"object"}],col:"\u5bb6\u4eba\u6700\u91cd\u8981 \u2014 family is #1",n:"\u7684 = possessive. \u6211\u7684=my. \u4f60\u7684=your."}
   ]},
-  {id:7,title:"Feelings",tz:"感觉",ss:[
-    {w:[{h:"我",p:"wǒ",e:"I",pt:"eu",r:"subject"},{h:"很",p:"hěn",e:"very",pt:"muito",r:"adverb"},{h:"开心",p:"kāixīn",e:"happy",pt:"feliz",r:"adjective"}],col:"高兴坏了 — ecstatic",colP:"高兴坏了 — eufórico",n:"开心/高兴/快乐 all = happy, different vibes.",nP:"开心/高兴/快乐 = feliz, vibes diferentes."},
-    {w:[{h:"今天",p:"jīntiān",e:"today",pt:"hoje",r:"time"},{h:"天气",p:"tiānqì",e:"weather",pt:"clima",r:"subject"},{h:"真",p:"zhēn",e:"really",pt:"realmente",r:"adverb"},{h:"好",p:"hǎo",e:"good",pt:"bom",r:"adjective"}],col:"今儿天不错",colP:"今儿天不错 — dia legal",n:"真 = truly/really. Stronger than 很.",nP:"真 = verdadeiramente. Mais forte que 很."},
-    {w:[{h:"我",p:"wǒ",e:"I",pt:"eu",r:"subject"},{h:"有点",p:"yǒudiǎn",e:"a bit",pt:"um pouco",r:"adverb"},{h:"累",p:"lèi",e:"tired",pt:"cansado",r:"adjective"}],col:"累成狗了 — tired as a dog",colP:"累成狗了 — cansado como cão",n:"有点=a bit (negative). 一点=a bit (neutral).",nP:"有点=(negativo). 一点=(neutro)."},
+  {id:7,title:"Feelings",tz:"\u611f\u89c9",ss:[
+    {w:[{h:"\u6211",p:"w\u01d2",e:"I",pt:"eu",r:"subject"},{h:"\u5f88",p:"h\u011bn",e:"very",pt:"muito",r:"adverb"},{h:"\u5f00\u5fc3",p:"k\u0101ix\u012bn",e:"happy",pt:"feliz",r:"adjective"}],col:"\u9ad8\u5174\u574f\u4e86 \u2014 ecstatic",n:"\u5f00\u5fc3/\u9ad8\u5174/\u5feb\u4e50 all mean happy, different vibes."},
+    {w:[{h:"\u4eca\u5929",p:"j\u012bnti\u0101n",e:"today",pt:"hoje",r:"time"},{h:"\u5929\u6c14",p:"ti\u0101nq\u00ec",e:"weather",pt:"clima",r:"subject"},{h:"\u771f",p:"zh\u0113n",e:"really",pt:"realmente",r:"adverb"},{h:"\u597d",p:"h\u01ceo",e:"good",pt:"bom",r:"adjective"}],col:"\u4eca\u513f\u5929\u4e0d\u9519",n:"\u771f = truly/really. Stronger than \u5f88."},
+    {w:[{h:"\u6211",p:"w\u01d2",e:"I",pt:"eu",r:"subject"},{h:"\u6709\u70b9",p:"y\u01d2udi\u01cen",e:"a bit",pt:"um pouco",r:"adverb"},{h:"\u7d2f",p:"l\u00e8i",e:"tired",pt:"cansado",r:"adjective"}],col:"\u7d2f\u6210\u72d7\u4e86 \u2014 tired as a dog",n:"\u6709\u70b9=a bit (negative). \u4e00\u70b9=(neutral)."}
   ]},
-  {id:8,title:"Numbers",tz:"数字",ss:[
-    {w:[{h:"一",p:"yī",e:"one",pt:"um",r:"object"},{h:"二",p:"èr",e:"two",pt:"dois",r:"object"},{h:"三",p:"sān",e:"three",pt:"três",r:"object"},{h:"四",p:"sì",e:"four",pt:"quatro",r:"object"},{h:"五",p:"wǔ",e:"five",pt:"cinco",r:"object"}],col:"幺(yāo) replaces 一 in phones",colP:"幺(yāo) substitui 一 em telefones",n:"四(4)=bad luck (≈死 death). 八(8)=lucky!",nP:"四(4)=azar (≈死 morte). 八(8)=sorte!"},
-    {w:[{h:"六",p:"liù",e:"six",pt:"seis",r:"object"},{h:"七",p:"qī",e:"seven",pt:"sete",r:"object"},{h:"八",p:"bā",e:"eight",pt:"oito",r:"object"},{h:"九",p:"jiǔ",e:"nine",pt:"nove",r:"object"},{h:"十",p:"shí",e:"ten",pt:"dez",r:"object"}],col:"666=awesome 八=prosperity",colP:"666=incrível 八=prosperidade",n:"Combine: 十一=11, 二十=20, 二十一=21. Just math!",nP:"Combine: 十一=11, 二十=20. Matemática!"},
-    {w:[{h:"我",p:"wǒ",e:"I",pt:"eu",r:"subject"},{h:"今年",p:"jīnnián",e:"this year",pt:"este ano",r:"time"},{h:"三十",p:"sānshí",e:"thirty",pt:"trinta",r:"object"},{h:"岁",p:"suì",e:"years old",pt:"anos",r:"measure"}],col:"我三十了",colP:"我三十了",n:"No 'am'. No 'old'. Just: I + year + 30 + age-word.",nP:"Sem 'tenho'. Só: eu + ano + 30 + contador."},
-  ]},
+  {id:8,title:"Numbers",tz:"\u6570\u5b57",ss:[
+    {w:[{h:"\u4e00",p:"y\u012b",e:"one",pt:"um",r:"object"},{h:"\u4e8c",p:"\u00e8r",e:"two",pt:"dois",r:"object"},{h:"\u4e09",p:"s\u0101n",e:"three",pt:"tr\u00eas",r:"object"},{h:"\u56db",p:"s\u00ec",e:"four",pt:"quatro",r:"object"},{h:"\u4e94",p:"w\u01d4",e:"five",pt:"cinco",r:"object"}],col:"\u5e7a(y\u0101o) replaces \u4e00 in phones",n:"\u56db(4)=bad luck (\u2248\u6b7b death). \u516b(8)=lucky!"},
+    {w:[{h:"\u516d",p:"li\u00f9",e:"six",pt:"seis",r:"object"},{h:"\u4e03",p:"q\u012b",e:"seven",pt:"sete",r:"object"},{h:"\u516b",p:"b\u0101",e:"eight",pt:"oito",r:"object"},{h:"\u4e5d",p:"ji\u01d4",e:"nine",pt:"nove",r:"object"},{h:"\u5341",p:"sh\u00ed",e:"ten",pt:"dez",r:"object"}],col:"666=awesome \u516b=prosperity",n:"Combine: \u5341\u4e00=11, \u4e8c\u5341=20. Just math!"},
+    {w:[{h:"\u6211",p:"w\u01d2",e:"I",pt:"eu",r:"subject"},{h:"\u4eca\u5e74",p:"j\u012bnni\u00e1n",e:"this year",pt:"este ano",r:"time"},{h:"\u4e09\u5341",p:"s\u0101nsh\u00ed",e:"thirty",pt:"trinta",r:"object"},{h:"\u5c81",p:"su\u00ec",e:"years old",pt:"anos",r:"measure"}],col:"\u6211\u4e09\u5341\u4e86 \u2014 \u4e86 marks change",n:"No 'am'. Just: I + this year + 30 + age-word."}
+  ]}
 ];
 
-// ═══ SETTINGS ═══
-function Settings({thm,setThm,fs,setFs,sc,setSc,lang,setLang,pin,setPin,rate,setRate,close}){
-  const th=THEMES[thm];
-  const row=(l,c)=>React.createElement('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'10px 0',borderBottom:`1px solid ${th.border}`}},React.createElement('span',{style:{fontSize:'14px',color:th.t2}},l),c);
-  const tog=(v,s)=>React.createElement('button',{onClick:()=>s(!v),style:{width:'42px',height:'24px',borderRadius:'12px',border:'none',background:v?th.accent:`${th.t3}40`,cursor:'pointer',position:'relative'}},React.createElement('div',{style:{width:'18px',height:'18px',borderRadius:'9px',background:'#fff',position:'absolute',top:'3px',left:v?'21px':'3px',transition:'all 0.2s'}}));
-  return React.createElement('div',{onClick:e=>{if(e.target===e.currentTarget)close();},style:{position:'fixed',inset:0,zIndex:100,background:'rgba(0,0,0,0.65)',backdropFilter:'blur(8px)',display:'flex',justifyContent:'center',alignItems:'flex-start',padding:'30px 14px',overflowY:'auto'}},
-    React.createElement('div',{style:{background:th.bgSolid,borderRadius:'16px',padding:'20px',maxWidth:'400px',width:'100%',border:`1px solid ${th.border}`,maxHeight:'80vh',overflowY:'auto'}},
-      React.createElement('div',{style:{display:'flex',justifyContent:'space-between',marginBottom:'14px'}},React.createElement('h2',{style:{margin:0,color:th.t1,fontSize:'18px'}},"⚙️ Settings"),React.createElement('button',{onClick:close,style:{background:'none',border:'none',color:th.t3,fontSize:'18px',cursor:'pointer'}},"✕")),
-      React.createElement('div',{style:{fontSize:'11px',color:th.t3,textTransform:'uppercase',letterSpacing:'1.5px',fontWeight:700,margin:'8px 0 6px'}},"Theme"),
-      React.createElement('div',{style:{display:'flex',flexWrap:'wrap',gap:'6px',marginBottom:'12px'}},Object.entries(THEMES).map(([k,v])=>React.createElement('button',{key:k,onClick:()=>setThm(k),style:{padding:'6px 12px',borderRadius:'8px',border:thm===k?`2px solid ${v.accent}`:`1px solid ${th.border}`,background:thm===k?`${v.accent}20`:'transparent',color:thm===k?v.accent:th.t2,cursor:'pointer',fontSize:'13px',fontWeight:600}},v.emoji+" "+v.name))),
-      row("Character size "+fs+"px",React.createElement('input',{type:'range',min:26,max:50,value:fs,onChange:e=>setFs(Number(e.target.value)),style:{width:'120px',accentColor:th.accent}})),
-      row("Speech speed "+rate+"x",React.createElement('input',{type:'range',min:0.3,max:1.2,step:0.1,value:rate,onChange:e=>setRate(parseFloat(e.target.value)),style:{width:'120px',accentColor:th.accent}})),
-      row("Pinyin",tog(pin,setPin)),row("🗣️ Colloquial",tog(sc,setSc)),
-      React.createElement('div',{style:{fontSize:'11px',color:th.t3,textTransform:'uppercase',letterSpacing:'1.5px',fontWeight:700,margin:'12px 0 6px'}},"Translation"),
-      React.createElement('div',{style:{display:'flex',gap:'6px'}},[["english","🇺🇸"],["portuguese","🇧🇷"],["both","Both"]].map(([v,l])=>React.createElement('button',{key:v,onClick:()=>setLang(v),style:{flex:1,padding:'7px',borderRadius:'8px',border:`1px solid ${lang===v?th.accent:th.border}`,background:lang===v?`${th.accent}18`:'transparent',color:lang===v?th.accent:th.t3,cursor:'pointer',fontSize:'14px',fontWeight:600}},l))),
-      React.createElement('div',{style:{marginTop:'16px',padding:'10px',background:th.surface,borderRadius:'10px',fontSize:'12px',color:th.t3,lineHeight:1.6}},"名桥 MindBridge v8 · 左手鬼 Edition · ",LESSONS.length," lessons · ",STORIES.length," stories · Built for 鬼鬼")
+function useSpeak(rate){
+  return React.useCallback(function(text){
+    if(!window.speechSynthesis)return;
+    window.speechSynthesis.cancel();
+    var u=new SpeechSynthesisUtterance(text);u.lang="zh-CN";u.rate=rate;
+    var voices=window.speechSynthesis.getVoices();
+    var v=voices.find(function(v){return v.lang.startsWith("zh");})||voices[0];
+    if(v)u.voice=v;
+    window.speechSynthesis.speak(u);
+  },[rate]);
+}
+
+function StrokePanel(props){
+  var char=props.char,th=props.th,onClose=props.onClose;
+  var containerRef=React.useRef(null);
+  var writerRef=React.useRef(null);
+  var _m=React.useState('watch'),mode=_m[0],setMode=_m[1];
+  var _ci=React.useState(0),charIdx=_ci[0],setCharIdx=_ci[1];
+  var _q=React.useState(''),quizMsg=_q[0],setQuizMsg=_q[1];
+  var chars=Array.from(char);
+  var current=chars[charIdx]||chars[0];
+
+  React.useEffect(function(){
+    if(!containerRef.current)return;
+    containerRef.current.innerHTML='';
+    writerRef.current=null;
+    setQuizMsg('');
+    try{
+      var w=HanziWriter.create(containerRef.current,current,{
+        width:220,height:220,padding:12,
+        strokeAnimationSpeed:0.7,delayBetweenStrokes:350,
+        strokeColor:th.sLine,outlineColor:th.sGhost,
+        drawingColor:th.accent2,radicalColor:th.accent,
+        showCharacter:mode==='watch',showOutline:true,
+        showHintAfterMisses:2,highlightOnComplete:true,drawingWidth:6
+      });
+      writerRef.current=w;
+      if(mode==='trace'){
+        setTimeout(function(){if(writerRef.current)writerRef.current.quiz({onComplete:function(){setQuizMsg('\u2705 \u592a\u68d2\u4e86 \u9b3c\u9b3c\uff01');}});},200);
+      }
+    }catch(e){
+      containerRef.current.innerHTML='<div style="color:#e06060;padding:20px;text-align:center">Character not in stroke database</div>';
+    }
+    return function(){writerRef.current=null;};
+  },[current,mode,th]);
+
+  return React.createElement('div',{style:{background:th.surface,border:'1px solid '+th.accent+'40',borderRadius:'16px',padding:'16px',marginTop:'12px',animation:'fadeIn 0.3s ease'}},
+    React.createElement('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'10px'}},
+      React.createElement('div',{style:{fontSize:'13px',color:th.accent,fontWeight:700,letterSpacing:'1px'}},"\u270d\ufe0f \u5de6\u624b\u9b3c Stroke Order"),
+      React.createElement('button',{onClick:onClose,style:{background:'none',border:'none',color:th.t3,fontSize:'18px',cursor:'pointer'}},"\u2715")
+    ),
+    chars.length>1&&React.createElement('div',{style:{display:'flex',gap:'6px',marginBottom:'10px',justifyContent:'center'}},
+      chars.map(function(c,i){return React.createElement('button',{key:i,onClick:function(){setCharIdx(i);},style:{width:'42px',height:'42px',borderRadius:'10px',border:'2px solid '+(i===charIdx?th.accent:th.border),background:i===charIdx?th.accent+'20':'transparent',color:th.t1,fontFamily:th.font,fontSize:'22px',fontWeight:700,cursor:'pointer'}},c);})
+    ),
+    React.createElement('div',{style:{display:'flex',gap:'6px',marginBottom:'12px'}},
+      React.createElement('button',{onClick:function(){setMode('watch');},style:{flex:1,padding:'8px',borderRadius:'8px',border:'1px solid '+(mode==='watch'?th.accent:th.border),background:mode==='watch'?th.accent+'18':'transparent',color:mode==='watch'?th.accent:th.t3,cursor:'pointer',fontSize:'14px',fontWeight:600}},"\ud83d\udc41\ufe0f Watch"),
+      React.createElement('button',{onClick:function(){setMode('trace');},style:{flex:1,padding:'8px',borderRadius:'8px',border:'1px solid '+(mode==='trace'?th.accent:th.border),background:mode==='trace'?th.accent+'18':'transparent',color:mode==='trace'?th.accent:th.t3,cursor:'pointer',fontSize:'14px',fontWeight:600}},"\ud83d\udd90\ufe0f Trace")
+    ),
+    React.createElement('div',{style:{display:'flex',justifyContent:'center',background:th.sBg,borderRadius:'14px',padding:'10px',border:'1px solid '+th.border,minHeight:'240px',touchAction:'none'}},
+      React.createElement('div',{ref:containerRef})
+    ),
+    React.createElement('div',{style:{display:'flex',gap:'8px',marginTop:'10px',justifyContent:'center',alignItems:'center',flexWrap:'wrap'}},
+      mode==='watch'&&React.createElement('button',{onClick:function(){if(writerRef.current)writerRef.current.animateCharacter();},style:{background:th.accent,border:'none',borderRadius:'10px',padding:'10px 24px',color:'#fff',cursor:'pointer',fontSize:'14px',fontWeight:700}},"\u25b6 Play strokes"),
+      mode==='trace'&&React.createElement('button',{onClick:function(){setQuizMsg('');if(writerRef.current)writerRef.current.quiz({onComplete:function(){setQuizMsg('\u2705 \u592a\u68d2\u4e86!');}});},style:{background:th.accent,border:'none',borderRadius:'10px',padding:'10px 24px',color:'#fff',cursor:'pointer',fontSize:'14px',fontWeight:700}},"\ud83d\udd04 Try again"),
+      mode==='trace'&&React.createElement('div',{style:{fontSize:'12px',color:th.t3,fontStyle:'italic'}},"Left-hand! Hint after 2 misses.")
+    ),
+    quizMsg&&React.createElement('div',{style:{textAlign:'center',marginTop:'8px',fontSize:'16px',color:'#50D4A0',fontWeight:700}},quizMsg)
+  );
+}
+
+function WordCard(props){
+  var word=props.word,lang=props.lang,pinyin=props.pinyin,active=props.active,onClick=props.onClick,th=props.th,fs=props.fs;
+  var role=R[word.r]||R.object,tone=gt(word.p),tc=TC[tone];
+  var tr=lang==="portuguese"?word.pt:lang==="english"?word.e:word.e+" \u00b7 "+word.pt;
+  return React.createElement('div',{onClick:onClick,style:{display:'flex',flexDirection:'column',alignItems:'center',gap:'5px',cursor:'pointer',transition:'transform 0.15s',transform:active?'scale(1.05)':'scale(1)'}},
+    React.createElement('div',{style:{background:th.surface,border:'1px solid '+th.border,borderRadius:'10px',padding:'4px 10px',fontSize:'12px',color:th.t2,fontWeight:500,textAlign:'center',maxWidth:'140px',lineHeight:1.3,position:'relative',marginBottom:'4px'}},tr,
+      React.createElement('div',{style:{position:'absolute',bottom:'-6px',left:'50%',transform:'translateX(-50%)',width:0,height:0,borderLeft:'6px solid transparent',borderRight:'6px solid transparent',borderTop:'6px solid '+th.border}})
+    ),
+    React.createElement('div',{style:{position:'relative',width:(fs*2.6)+'px',height:(fs*2.6)+'px',background:active?th.cardHover:th.card,border:'2px solid '+(active?role.c+'60':th.border),borderRadius:'14px',display:'flex',alignItems:'center',justifyContent:'center'}},
+      React.createElement('div',{style:{position:'absolute',left:0,top:0,bottom:0,width:'4px',background:role.c,opacity:0.6,borderRadius:'14px 0 0 14px'}}),
+      React.createElement('span',{style:{fontSize:(fs*1.15)+'px',fontWeight:700,color:th.t1,fontFamily:th.font}},word.h)
+    ),
+    pinyin&&React.createElement('div',{style:{display:'flex',alignItems:'center',gap:'4px',fontSize:'14px',color:tc,fontWeight:600,fontFamily:"'JetBrains Mono',monospace"}},word.p,React.createElement('span',{style:{width:'7px',height:'7px',borderRadius:'4px',background:tc,display:'inline-block'}})),
+    React.createElement('div',{style:{fontSize:'10px',color:role.c,fontWeight:700,textTransform:'uppercase',letterSpacing:'1px',padding:'2px 7px',borderRadius:'4px',background:role.c+'15'}},role.s)
+  );
+}
+
+function SentenceView(props){
+  var s=props.s,lang=props.lang,pin=props.pin,ai=props.ai,setAi=props.setAi,spk=props.spk,th=props.th,fs=props.fs,showC=props.showC;
+  var _sc=React.useState(null),strokeChar=_sc[0],setStrokeChar=_sc[1];
+  var full=s.w.map(function(w){return w.h;}).join(""),fullP=s.w.map(function(w){return w.p;}).join(" ");
+  return React.createElement('div',{style:{display:'flex',flexDirection:'column',gap:'12px'}},
+    React.createElement('div',{style:{background:th.surface,borderRadius:'16px',padding:'16px',border:'1px solid '+th.border}},
+      React.createElement('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:'8px',marginBottom:'14px'}},
+        React.createElement('div',null,
+          React.createElement('div',{style:{fontSize:(fs*0.72)+'px',color:th.t1,fontFamily:th.font,fontWeight:700,letterSpacing:'3px'}},full),
+          pin&&React.createElement('div',{style:{fontSize:'14px',color:th.t3,fontFamily:"'JetBrains Mono',monospace",marginTop:'4px'}},fullP)
+        ),
+        React.createElement('button',{onClick:function(){spk(full);},style:{background:th.accent+'18',border:'1px solid '+th.accent+'30',borderRadius:'12px',padding:'8px 16px',color:th.accent,cursor:'pointer',fontSize:'16px',fontWeight:600}},"\ud83d\udd0a")
+      ),
+      React.createElement('div',{style:{display:'flex',flexWrap:'wrap',gap:'12px',justifyContent:'center',padding:'8px 0'}},
+        s.w.map(function(w,i){return React.createElement(WordCard,{key:i,word:w,lang:lang,pinyin:pin,active:ai===i,onClick:function(){setAi(i===ai?null:i);spk(w.h);},th:th,fs:fs});})
+      ),
+      React.createElement('div',{style:{background:th.accent+'08',borderRadius:'8px',padding:'8px 10px',marginTop:'8px'}},
+        React.createElement('div',{style:{fontSize:'10px',color:th.t3,textTransform:'uppercase',letterSpacing:'1.5px',fontWeight:700,marginBottom:'4px'}},"Structure"),
+        React.createElement('div',{style:{display:'flex',flexWrap:'wrap',gap:'4px'}},s.w.map(function(w,i){var role=R[w.r]||R.object;return React.createElement('span',{key:i,style:{fontSize:'12px',color:role.c,fontWeight:700,padding:'2px 6px',borderRadius:'4px',background:role.c+'12',fontFamily:"'JetBrains Mono',monospace"}},role.s+(i<s.w.length-1?" \u2192":""));}))
+      )
+    ),
+    React.createElement('div',{style:{background:th.surface,borderLeft:'3px solid '+th.accent,borderRadius:'0 10px 10px 0',padding:'10px 14px',fontSize:'15px',color:th.t2,lineHeight:1.7}},"\ud83d\udca1 "+s.n),
+    showC&&s.col&&React.createElement('div',{style:{background:th.accent2+'08',border:'1px solid '+th.accent2+'15',borderRadius:'10px',padding:'10px 14px',fontSize:'14px',display:'flex',alignItems:'center',gap:'8px',flexWrap:'wrap'}},
+      React.createElement('span',{style:{flex:1}},React.createElement('span',{style:{color:th.accent2,fontWeight:700}},"\ud83d\udde3\ufe0f "),React.createElement('span',{style:{color:th.t1}},s.col)),
+      React.createElement('button',{onClick:function(){spk(s.col.split("\u2014")[0].trim());},style:{background:th.accent2+'15',border:'1px solid '+th.accent2+'25',borderRadius:'8px',padding:'5px 12px',color:th.accent2,cursor:'pointer',fontSize:'13px',fontWeight:600,flexShrink:0}},"\ud83d\udd0a")
+    ),
+    ai!==null&&(function(){var w=s.w[ai],role=R[w.r]||R.object,tone=gt(w.p),tc=TC[tone];return React.createElement('div',{style:{background:th.surface,borderRadius:'16px',padding:'16px',border:'1px solid '+th.border,animation:'fadeIn 0.3s ease'}},
+      React.createElement('div',{style:{display:'flex',gap:'14px',alignItems:'center',flexWrap:'wrap'}},
+        React.createElement('div',{onClick:function(){spk(w.h);},style:{width:'90px',height:'90px',background:th.card,border:'3px solid '+tc+'50',borderRadius:'14px',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',flexShrink:0}},
+          React.createElement('span',{style:{fontSize:'46px',fontFamily:th.font,fontWeight:900,color:th.t1}},w.h)),
+        React.createElement('div',{style:{flex:1,minWidth:'100px'}},
+          React.createElement('div',{style:{fontSize:'18px',color:tc,fontWeight:600,fontFamily:"'JetBrains Mono',monospace",marginBottom:'4px'}},w.p+" \u00b7 Tone "+tone),
+          React.createElement('div',{style:{fontSize:'15px',color:th.t1,marginBottom:'2px'}},"\ud83c\uddfa\ud83c\uddf8 "+w.e),
+          React.createElement('div',{style:{fontSize:'15px',color:th.t1,marginBottom:'8px'}},"\ud83c\udde7\ud83c\uddf7 "+w.pt),
+          React.createElement('span',{style:{padding:'3px 8px',borderRadius:'6px',background:role.c+'15',fontSize:'11px',color:role.c,fontWeight:700}},role.s)
+        )
+      ),
+      React.createElement('div',{style:{marginTop:'12px',display:'flex',gap:'8px'}},
+        React.createElement('button',{onClick:function(){setStrokeChar(strokeChar===w.h?null:w.h);},style:{flex:1,background:th.accent+'15',border:'1px solid '+th.accent+'30',borderRadius:'10px',padding:'10px',color:th.accent,cursor:'pointer',fontSize:'14px',fontWeight:600}},strokeChar===w.h?"Hide strokes":"\u270d\ufe0f Stroke order"),
+        React.createElement('button',{onClick:function(){spk(w.h);},style:{background:th.accent+'15',border:'1px solid '+th.accent+'30',borderRadius:'10px',padding:'10px 16px',color:th.accent,cursor:'pointer',fontSize:'14px'}},"\ud83d\udd0a")
+      ),
+      strokeChar===w.h&&React.createElement(StrokePanel,{char:w.h,th:th,onClose:function(){setStrokeChar(null);}})
+    );})()
+  );
+}
+
+function SpeechPractice(props){
+  var s=props.s,spk=props.spk,th=props.th,fs=props.fs;
+  var _st=React.useState('idle'),status=_st[0],setStatus=_st[1];
+  var _r=React.useState(null),res=_r[0],setRes=_r[1];
+  var recRef=React.useRef(null),timerRef=React.useRef(null);
+  var full=s.w.map(function(w){return w.h;}).join("");
+  var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  React.useEffect(function(){return function(){if(recRef.current){try{recRef.current.abort();}catch(e){}}if(timerRef.current)clearTimeout(timerRef.current);};},[s]);
+  var start=function(){
+    if(status==='listening'){if(recRef.current){try{recRef.current.stop();}catch(e){}}recRef.current=null;setStatus('idle');return;}
+    if(!SR){setRes({err:"Need Chrome for speech recognition."});return;}
+    setRes(null);setStatus('requesting');
+    navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){
+      stream.getTracks().forEach(function(t){t.stop();});
+      var rec=new SR();rec.lang='zh-CN';rec.continuous=false;rec.interimResults=false;recRef.current=rec;
+      rec.onstart=function(){setStatus('listening');};
+      rec.onresult=function(e){if(timerRef.current)clearTimeout(timerRef.current);var tx=e.results[0][0].transcript;var conf=Math.round(e.results[0][0].confidence*100);var clean=tx.replace(/\s|[.,!?\u3002\uff0c\uff01\uff1f]/g,'');var target=full.replace(/\s/g,'');setRes({tx:tx,conf:conf,m:clean===target||clean.indexOf(target)>=0||target.indexOf(clean)>=0});setStatus('idle');recRef.current=null;};
+      rec.onerror=function(e){if(timerRef.current)clearTimeout(timerRef.current);setStatus('idle');recRef.current=null;if(e.error==='no-speech')setRes({err:"No speech heard."});else setRes({err:"Error: "+e.error});};
+      rec.onend=function(){if(timerRef.current)clearTimeout(timerRef.current);setStatus('idle');recRef.current=null;};
+      timerRef.current=setTimeout(function(){if(recRef.current){try{recRef.current.stop();}catch(e){}}},10000);
+      try{rec.start();}catch(e){setStatus('idle');setRes({err:"Couldn't start mic."});}
+    }).catch(function(){setStatus('idle');setRes({err:"Mic blocked. Tap lock icon > Site Settings > Microphone > Allow."});});
+  };
+  var isActive=status==='listening'||status==='requesting';
+  return React.createElement('div',{style:{background:th.surface,borderRadius:'16px',padding:'24px',border:'1px solid '+th.border,textAlign:'center'}},
+    React.createElement('div',{style:{fontSize:(fs*1)+'px',color:th.t1,fontFamily:th.font,fontWeight:800,letterSpacing:'4px',marginBottom:'8px'}},full),
+    React.createElement('div',{style:{fontSize:'16px',color:th.t3,fontFamily:"'JetBrains Mono',monospace",marginBottom:'24px'}},s.w.map(function(w){return w.p;}).join(" ")),
+    React.createElement('div',{style:{display:'flex',gap:'10px',justifyContent:'center',flexWrap:'wrap'}},
+      React.createElement('button',{onClick:function(){spk(full);},style:{background:th.accent+'18',border:'1px solid '+th.accent+'30',borderRadius:'12px',padding:'12px 24px',color:th.accent,cursor:'pointer',fontSize:'16px',fontWeight:600}},"\ud83d\udd0a Listen first"),
+      React.createElement('button',{onClick:start,style:{background:isActive?'#e06060':th.accent,border:'none',borderRadius:'12px',padding:'12px 24px',color:'#fff',cursor:'pointer',fontSize:'16px',fontWeight:700,animation:status==='listening'?'pulse 1.5s infinite':'none'}},status==='requesting'?"\u23f3 Mic...":status==='listening'?"\u23f9\ufe0f Stop":"\ud83c\udfa4 Speak")
+    ),
+    status==='listening'&&React.createElement('div',{style:{marginTop:'14px',color:'#e06060',fontSize:'14px',animation:'breathe 1.5s infinite'}},"\ud83d\udd34 Listening \u2014 speak now"),
+    res&&res.err&&React.createElement('div',{style:{marginTop:'16px',background:'rgba(244,190,80,0.1)',border:'1px solid rgba(244,190,80,0.25)',borderRadius:'12px',padding:'14px',color:'#F4BE50',fontSize:'14px',textAlign:'left'}},"\u26a0\ufe0f "+res.err),
+    res&&!res.err&&React.createElement('div',{style:{marginTop:'16px',background:res.m?'rgba(80,212,160,0.1)':'rgba(244,190,80,0.1)',border:'1px solid '+(res.m?'rgba(80,212,160,0.25)':'rgba(244,190,80,0.25)'),borderRadius:'12px',padding:'16px'}},
+      React.createElement('div',{style:{fontSize:'28px',marginBottom:'4px'}},res.m?"\u2705":"\ud83d\udd04"),
+      React.createElement('div',{style:{color:res.m?'#50D4A0':'#F4BE50',fontWeight:700,fontSize:'18px'}},res.m?"\u592a\u68d2\u4e86 \u9b3c\u9b3c\uff01":"\u518d\u8bd5\u4e00\u6b21"),
+      React.createElement('div',{style:{color:th.t2,fontSize:'15px',marginTop:'8px'}},"Heard: ",React.createElement('span',{style:{color:th.t1,fontFamily:th.font,fontSize:'20px'}},res.tx)),
+      React.createElement('div',{style:{color:th.t3,fontSize:'13px',marginTop:'4px'}},res.conf+"% confidence")
     )
   );
 }
 
-// ═══ MAIN APP ═══
+function StoriesView(props){
+  var th=props.th,fs=props.fs,lang=props.lang,spk=props.spk;
+  var _d=React.useState([]),dismissed=_d[0],setDismissed=_d[1];
+  var _e=React.useState(null),expanded=_e[0],setExpanded=_e[1];
+  var _ss=React.useState(null),showStroke=_ss[0],setShowStroke=_ss[1];
+  var visible=STORIES.filter(function(s){return dismissed.indexOf(s.id)<0;});
+  var cats=[];visible.forEach(function(s){if(cats.indexOf(s.cat)<0)cats.push(s.cat);});
+  var dismiss=function(id){var n=dismissed.concat([id]);setDismissed(n);setExpanded(null);setShowStroke(null);};
+  var resetAll=function(){setDismissed([]);setExpanded(null);setShowStroke(null);};
+  var speakSlow=function(text){if(!window.speechSynthesis)return;window.speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(text);u.lang='zh-CN';u.rate=0.5;var v=window.speechSynthesis.getVoices().find(function(v){return v.lang.startsWith('zh');});if(v)u.voice=v;window.speechSynthesis.speak(u);};
+
+  if(visible.length===0)return React.createElement('div',{style:{textAlign:'center',padding:'40px 20px'}},
+    React.createElement('div',{style:{fontSize:'40px',marginBottom:'10px'}},"\ud83c\udf89"),
+    React.createElement('div',{style:{fontSize:'18px',color:th.t1,fontWeight:700,marginBottom:'8px'}},"All caught up, \u9b3c\u9b3c!"),
+    React.createElement('button',{onClick:resetAll,style:{background:th.accent,border:'none',borderRadius:'10px',padding:'10px 20px',color:'#fff',cursor:'pointer',fontSize:'14px',fontWeight:600}},"\u267b\ufe0f Bring them back")
+  );
+
+  return React.createElement('div',{style:{display:'flex',flexDirection:'column',gap:'8px'}},
+    React.createElement('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center'}},
+      React.createElement('div',{style:{fontSize:'13px',color:th.t3}},visible.length+"/"+STORIES.length+" stories"),
+      dismissed.length>0&&React.createElement('button',{onClick:resetAll,style:{background:th.accent+'15',border:'1px solid '+th.accent+'30',borderRadius:'8px',padding:'4px 10px',color:th.accent,cursor:'pointer',fontSize:'12px'}},"\u267b\ufe0f Reset")
+    ),
+    cats.map(function(cat){return React.createElement(React.Fragment,{key:cat},
+      React.createElement('div',{style:{fontSize:'11px',color:th.t3,textTransform:'uppercase',letterSpacing:'1.5px',fontWeight:700,marginTop:'6px'}},cat),
+      visible.filter(function(s){return s.cat===cat;}).map(function(story){
+        var isOpen=expanded===story.id;
+        return React.createElement('div',{key:story.id,style:{background:th.surface,border:'1px solid '+(isOpen?th.accent+'40':th.border),borderRadius:'14px',overflow:'hidden'}},
+          React.createElement('div',{onClick:function(){setExpanded(isOpen?null:story.id);setShowStroke(null);},style:{padding:'14px',cursor:'pointer',display:'flex',justifyContent:'space-between',alignItems:'center'}},
+            React.createElement('div',{style:{fontSize:'15px',color:th.t1,fontWeight:700,lineHeight:1.3,flex:1}},story.title),
+            React.createElement('span',{style:{color:th.t3,fontSize:'14px',marginLeft:'8px'}},isOpen?"\u25b2":"\u25bc")
+          ),
+          isOpen&&React.createElement('div',{style:{padding:'0 14px 14px',animation:'fadeIn 0.2s ease'}},
+            React.createElement('div',{style:{fontSize:'14px',color:th.t2,lineHeight:1.85,marginBottom:'14px'}},story.body),
+            story.audio&&React.createElement('div',{style:{background:th.accent+'08',border:'1px solid '+th.accent+'15',borderRadius:'12px',padding:'12px',marginBottom:'12px'}},
+              React.createElement('div',{style:{fontSize:'10px',color:th.accent,textTransform:'uppercase',letterSpacing:'1px',fontWeight:700,marginBottom:'6px'}},"\ud83d\udd0a Listen & Repeat"),
+              React.createElement('div',{style:{fontSize:'20px',color:th.t1,fontFamily:th.font,fontWeight:700,marginBottom:'10px',letterSpacing:'2px'}},story.audio),
+              React.createElement('div',{style:{display:'flex',gap:'8px',flexWrap:'wrap'}},
+                React.createElement('button',{onClick:function(){spk(story.audio);},style:{background:th.accent,border:'none',borderRadius:'10px',padding:'8px 16px',color:'#fff',cursor:'pointer',fontSize:'14px',fontWeight:600}},"\ud83d\udd0a Listen"),
+                React.createElement('button',{onClick:function(){speakSlow(story.audio);},style:{background:th.accent+'18',border:'1px solid '+th.accent+'30',borderRadius:'10px',padding:'8px 16px',color:th.accent,cursor:'pointer',fontSize:'14px',fontWeight:600}},"\ud83d\udc22 Slow"),
+                story.chars&&React.createElement('button',{onClick:function(){setShowStroke(showStroke===story.id?null:story.id);},style:{background:th.accent2+'15',border:'1px solid '+th.accent2+'25',borderRadius:'10px',padding:'8px 16px',color:th.accent2,cursor:'pointer',fontSize:'14px',fontWeight:600}},"\u270d\ufe0f Write")
+              )
+            ),
+            showStroke===story.id&&story.chars&&React.createElement(StrokePanel,{char:story.chars,th:th,onClose:function(){setShowStroke(null);}}),
+            React.createElement('div',{style:{background:th.accent+'10',border:'1px solid '+th.accent+'20',borderRadius:'10px',padding:'10px',marginBottom:'12px'}},
+              React.createElement('div',{style:{fontSize:'10px',color:th.accent,textTransform:'uppercase',letterSpacing:'1px',fontWeight:700,marginBottom:'4px'}},"\ud83d\udd11 Key"),
+              React.createElement('div',{style:{fontSize:'14px',color:th.t1,fontWeight:600}},story.key)
+            ),
+            React.createElement('button',{onClick:function(){dismiss(story.id);},style:{width:'100%',background:th.accent2+'15',border:'1px solid '+th.accent2+'25',borderRadius:'10px',padding:'10px',color:th.accent2,cursor:'pointer',fontSize:'14px',fontWeight:600}},"\u2713 Got it \u2014 dismiss")
+          )
+        );
+      })
+    );})
+  );
+}
+
+function Settings(props){
+  var thm=props.thm,setThm=props.setThm,fs=props.fs,setFs=props.setFs,sc=props.sc,setSc=props.setSc,lang=props.lang,setLang=props.setLang,pin=props.pin,setPin=props.setPin,rate=props.rate,setRate=props.setRate,close=props.close;
+  var th=THEMES[thm];
+  var row=function(l,c){return React.createElement('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'10px 0',borderBottom:'1px solid '+th.border}},React.createElement('span',{style:{fontSize:'14px',color:th.t2}},l),c);};
+  var tog=function(v,s){return React.createElement('button',{onClick:function(){s(!v);},style:{width:'42px',height:'24px',borderRadius:'12px',border:'none',background:v?th.accent:th.t3+'40',cursor:'pointer',position:'relative'}},React.createElement('div',{style:{width:'18px',height:'18px',borderRadius:'9px',background:'#fff',position:'absolute',top:'3px',left:v?'21px':'3px',transition:'all 0.2s'}}));};
+  return React.createElement('div',{onClick:function(e){if(e.target===e.currentTarget)close();},style:{position:'fixed',inset:0,zIndex:100,background:'rgba(0,0,0,0.65)',backdropFilter:'blur(8px)',display:'flex',justifyContent:'center',alignItems:'flex-start',padding:'30px 14px',overflowY:'auto'}},
+    React.createElement('div',{style:{background:th.bgSolid,borderRadius:'16px',padding:'20px',maxWidth:'400px',width:'100%',border:'1px solid '+th.border,maxHeight:'80vh',overflowY:'auto'}},
+      React.createElement('div',{style:{display:'flex',justifyContent:'space-between',marginBottom:'14px'}},React.createElement('h2',{style:{margin:0,color:th.t1,fontSize:'18px'}},"\u2699\ufe0f Settings"),React.createElement('button',{onClick:close,style:{background:'none',border:'none',color:th.t3,fontSize:'18px',cursor:'pointer'}},"\u2715")),
+      React.createElement('div',{style:{fontSize:'11px',color:th.t3,textTransform:'uppercase',letterSpacing:'1.5px',fontWeight:700,margin:'8px 0 6px'}},"Theme"),
+      React.createElement('div',{style:{display:'flex',flexWrap:'wrap',gap:'6px',marginBottom:'12px'}},Object.entries(THEMES).map(function(entry){var k=entry[0],v=entry[1];return React.createElement('button',{key:k,onClick:function(){setThm(k);},style:{padding:'6px 12px',borderRadius:'8px',border:thm===k?'2px solid '+v.accent:'1px solid '+th.border,background:thm===k?v.accent+'20':'transparent',color:thm===k?v.accent:th.t2,cursor:'pointer',fontSize:'13px',fontWeight:600}},v.emoji+" "+v.name);})),
+      row("Size "+fs+"px",React.createElement('input',{type:'range',min:26,max:50,value:fs,onChange:function(e){setFs(Number(e.target.value));},style:{width:'120px',accentColor:th.accent}})),
+      row("Speed "+rate+"x",React.createElement('input',{type:'range',min:0.3,max:1.2,step:0.1,value:rate,onChange:function(e){setRate(parseFloat(e.target.value));},style:{width:'120px',accentColor:th.accent}})),
+      row("Pinyin",tog(pin,setPin)),row("Colloquial",tog(sc,setSc)),
+      React.createElement('div',{style:{fontSize:'11px',color:th.t3,textTransform:'uppercase',letterSpacing:'1.5px',fontWeight:700,margin:'12px 0 6px'}},"Translation"),
+      React.createElement('div',{style:{display:'flex',gap:'6px'}},["english","portuguese","both"].map(function(v){var labels={english:"\ud83c\uddfa\ud83c\uddf8",portuguese:"\ud83c\udde7\ud83c\uddf7",both:"Both"};return React.createElement('button',{key:v,onClick:function(){setLang(v);},style:{flex:1,padding:'7px',borderRadius:'8px',border:'1px solid '+(lang===v?th.accent:th.border),background:lang===v?th.accent+'18':'transparent',color:lang===v?th.accent:th.t3,cursor:'pointer',fontSize:'14px',fontWeight:600}},labels[v]);})),
+      React.createElement('div',{style:{marginTop:'16px',padding:'10px',background:th.surface,borderRadius:'10px',fontSize:'12px',color:th.t3}},"\u540d\u6865 MindBridge v8 \u00b7 \u5de6\u624b\u9b3c Edition \u00b7 Built for \u9b3c\u9b3c")
+    )
+  );
+}
+
 function MindBridge(){
-  const[cL,setCL]=React.useState(0);const[cS,setCS]=React.useState(0);const[lang,setLang]=React.useState("both");const[pin,setPin]=React.useState(true);const[ai,setAi]=React.useState(null);const[mode,setMode]=React.useState("study");const[stg,setStg]=React.useState(false);const[thm,setThm]=React.useState("cosmic");const[fs,setFs]=React.useState(34);const[rate,setRate]=React.useState(0.8);const[sc,setSc]=React.useState(true);
-  const lesson=LESSONS[cL],sent=lesson.ss[cS],th=THEMES[thm];
-  const totalWords=LESSONS.reduce((a,l)=>a+l.ss.reduce((b,s)=>b+s.w.length,0),0);
-  const speak=useSpeak(rate);
-  React.useEffect(()=>{if(!window.speechSynthesis)return;window.speechSynthesis.getVoices();window.speechSynthesis.onvoiceschanged=()=>window.speechSynthesis.getVoices();},[]);
-  const next=()=>{if(cS<lesson.ss.length-1)setCS(s=>s+1);else if(cL<LESSONS.length-1){setCL(l=>l+1);setCS(0);}setAi(null);};
-  const prev=()=>{if(cS>0)setCS(s=>s-1);else if(cL>0){const nl=cL-1;setCL(nl);setCS(LESSONS[nl].ss.length-1);}setAi(null);};
+  var _cL=React.useState(0),cL=_cL[0],setCL=_cL[1];
+  var _cS=React.useState(0),cS=_cS[0],setCS=_cS[1];
+  var _lang=React.useState("both"),lang=_lang[0],setLang=_lang[1];
+  var _pin=React.useState(true),pin=_pin[0],setPin=_pin[1];
+  var _ai=React.useState(null),ai=_ai[0],setAi=_ai[1];
+  var _mode=React.useState("study"),mode=_mode[0],setMode=_mode[1];
+  var _stg=React.useState(false),stg=_stg[0],setStg=_stg[1];
+  var _thm=React.useState("cosmic"),thm=_thm[0],setThm=_thm[1];
+  var _fs=React.useState(34),fs=_fs[0],setFs=_fs[1];
+  var _rate=React.useState(0.8),rate=_rate[0],setRate=_rate[1];
+  var _sc=React.useState(true),sc=_sc[0],setSc=_sc[1];
+  var lesson=LESSONS[cL],sent=lesson.ss[cS],th=THEMES[thm];
+  var totalWords=LESSONS.reduce(function(a,l){return a+l.ss.reduce(function(b,s){return b+s.w.length;},0);},0);
+  var speak=useSpeak(rate);
+  React.useEffect(function(){if(!window.speechSynthesis)return;window.speechSynthesis.getVoices();window.speechSynthesis.onvoiceschanged=function(){window.speechSynthesis.getVoices();};},[]);
+  var next=function(){if(cS<lesson.ss.length-1)setCS(cS+1);else if(cL<LESSONS.length-1){setCL(cL+1);setCS(0);}setAi(null);};
+  var prev=function(){if(cS>0)setCS(cS-1);else if(cL>0){var nl=cL-1;setCL(nl);setCS(LESSONS[nl].ss.length-1);}setAi(null);};
 
   return React.createElement('div',{style:{minHeight:'100vh',height:'100dvh',display:'flex',flexDirection:'column',background:th.bg,color:th.t1,fontFamily:"'Outfit','Noto Sans SC',sans-serif"}},
-    stg&&React.createElement(Settings,{thm,setThm,fs,setFs,sc,setSc,lang,setLang,pin,setPin,rate,setRate,close:()=>setStg(false)}),
-    React.createElement('div',{style:{background:th.header,backdropFilter:'blur(16px)',borderBottom:`1px solid ${th.border}`,padding:'10px 14px',flexShrink:0}},
+    stg&&React.createElement(Settings,{thm:thm,setThm:setThm,fs:fs,setFs:setFs,sc:sc,setSc:setSc,lang:lang,setLang:setLang,pin:pin,setPin:setPin,rate:rate,setRate:setRate,close:function(){setStg(false);}}),
+    React.createElement('div',{style:{background:th.header,backdropFilter:'blur(16px)',borderBottom:'1px solid '+th.border,padding:'10px 14px',flexShrink:0}},
       React.createElement('div',{style:{maxWidth:'800px',margin:'0 auto',display:'flex',justifyContent:'space-between',alignItems:'center'}},
-        React.createElement('h1',{style:{margin:0,fontSize:'20px',fontWeight:900,background:`linear-gradient(135deg,${th.accent},${th.accent2})`,WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}},"名桥 MindBridge"),
+        React.createElement('h1',{style:{margin:0,fontSize:'20px',fontWeight:900,background:'linear-gradient(135deg,'+th.accent+','+th.accent2+')',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}},"\u540d\u6865 MindBridge"),
         React.createElement('div',{style:{display:'flex',gap:'3px'}},
-          [["study","📖"],["practice","🎤"],["stories","📚"]].map(([m,e])=>React.createElement('button',{key:m,onClick:()=>setMode(m),style:{padding:'6px 10px',borderRadius:'8px',border:'none',background:mode===m?th.accent:`${th.accent}15`,color:mode===m?'#fff':th.t3,fontSize:'13px',fontWeight:700,cursor:'pointer'}},e)),
-          React.createElement('button',{onClick:()=>setStg(true),style:{padding:'6px 10px',borderRadius:'8px',border:'none',background:`${th.accent}15`,color:th.t3,fontSize:'13px',cursor:'pointer'}},"⚙️")
+          [["study","\ud83d\udcd6"],["practice","\ud83c\udfa4"],["stories","\ud83d\udcda"]].map(function(pair){var m=pair[0],e=pair[1];return React.createElement('button',{key:m,onClick:function(){setMode(m);},style:{padding:'6px 10px',borderRadius:'8px',border:'none',background:mode===m?th.accent:th.accent+'15',color:mode===m?'#fff':th.t3,fontSize:'13px',fontWeight:700,cursor:'pointer'}},e);}),
+          React.createElement('button',{onClick:function(){setStg(true);},style:{padding:'6px 10px',borderRadius:'8px',border:'none',background:th.accent+'15',color:th.t3,fontSize:'13px',cursor:'pointer'}},"\u2699\ufe0f")
         )
       )
     ),
     React.createElement('div',{style:{flex:1,overflowY:'auto',overflowX:'hidden',WebkitOverflowScrolling:'touch'}},
       React.createElement('div',{style:{maxWidth:'800px',margin:'0 auto',padding:'12px 12px 24px 12px'}},
-        mode==="stories"?React.createElement(StoriesView,{th,fs,lang,spk:speak}):
+        mode==="stories"?React.createElement(StoriesView,{th:th,fs:fs,lang:lang,spk:speak}):
         React.createElement(React.Fragment,null,
-          React.createElement('div',{style:{display:'flex',gap:'5px',marginBottom:'10px',overflowX:'auto',paddingBottom:'4px'}},LESSONS.map((l,i)=>React.createElement('button',{key:l.id,onClick:()=>{setCL(i);setCS(0);setAi(null);},style:{padding:'7px 14px',borderRadius:'8px',border:`1px solid ${i===cL?th.accent:th.border}`,background:i===cL?`${th.accent}18`:'transparent',color:i===cL?th.accent:th.t3,fontSize:'13px',fontWeight:600,cursor:'pointer',whiteSpace:'nowrap',flexShrink:0}},l.tz+" "+l.title))),
+          React.createElement('div',{style:{display:'flex',gap:'5px',marginBottom:'10px',overflowX:'auto',paddingBottom:'4px'}},LESSONS.map(function(l,i){return React.createElement('button',{key:l.id,onClick:function(){setCL(i);setCS(0);setAi(null);},style:{padding:'7px 14px',borderRadius:'8px',border:'1px solid '+(i===cL?th.accent:th.border),background:i===cL?th.accent+'18':'transparent',color:i===cL?th.accent:th.t3,fontSize:'13px',fontWeight:600,cursor:'pointer',whiteSpace:'nowrap',flexShrink:0}},l.tz+" "+l.title);})),
           React.createElement('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'10px'}},
-            React.createElement('span',{style:{fontSize:'12px',color:th.t3}},`${cS+1}/${lesson.ss.length} · ${totalWords} words`),
-            React.createElement('div',{style:{display:'flex',gap:'4px'}},lesson.ss.map((_,i)=>React.createElement('div',{key:i,onClick:()=>{setCS(i);setAi(null);},style:{width:i===cS?'18px':'7px',height:'7px',borderRadius:'4px',background:i===cS?th.accent:i<cS?`${th.accent}50`:th.border,cursor:'pointer',transition:'all 0.3s'}})))
+            React.createElement('span',{style:{fontSize:'12px',color:th.t3}},(cS+1)+"/"+lesson.ss.length+" \u00b7 "+totalWords+" words"),
+            React.createElement('div',{style:{display:'flex',gap:'4px'}},lesson.ss.map(function(_,i){return React.createElement('div',{key:i,onClick:function(){setCS(i);setAi(null);},style:{width:i===cS?'18px':'7px',height:'7px',borderRadius:'4px',background:i===cS?th.accent:i<cS?th.accent+'50':th.border,cursor:'pointer',transition:'all 0.3s'}});}))
           ),
-          mode==="study"?React.createElement(SentenceView,{s:sent,lang,pin,ai,setAi,spk:speak,th,fs,showC:sc}):React.createElement(SpeechPractice,{s:sent,spk:speak,th,fs})
+          mode==="study"?React.createElement(SentenceView,{s:sent,lang:lang,pin:pin,ai:ai,setAi:setAi,spk:speak,th:th,fs:fs,showC:sc}):React.createElement(SpeechPractice,{s:sent,spk:speak,th:th,fs:fs})
         )
       )
     ),
-    mode!=="stories"&&React.createElement('div',{style:{flexShrink:0,background:th.header,backdropFilter:'blur(16px)',borderTop:`1px solid ${th.border}`,padding:'10px 14px',display:'flex',justifyContent:'space-between',gap:'8px'}},
-      React.createElement('button',{onClick:prev,style:{padding:'10px 16px',borderRadius:'10px',border:`1px solid ${th.border}`,background:'transparent',color:th.t2,fontSize:'15px',fontWeight:600,cursor:'pointer'}},"← Prev"),
-      React.createElement('button',{onClick:()=>speak(sent.w.map(w=>w.h).join("")),style:{padding:'10px 20px',borderRadius:'10px',border:'none',background:`linear-gradient(135deg,${th.accent},${th.accent2})`,color:'#fff',fontSize:'16px',fontWeight:700,cursor:'pointer'}},"🔊"),
-      React.createElement('button',{onClick:next,style:{padding:'10px 16px',borderRadius:'10px',border:`1px solid ${th.accent}30`,background:`${th.accent}10`,color:th.accent,fontSize:'15px',fontWeight:700,cursor:'pointer'}},"Next →")
+    mode!=="stories"&&React.createElement('div',{style:{flexShrink:0,background:th.header,backdropFilter:'blur(16px)',borderTop:'1px solid '+th.border,padding:'10px 14px',display:'flex',justifyContent:'space-between',gap:'8px'}},
+      React.createElement('button',{onClick:prev,style:{padding:'10px 16px',borderRadius:'10px',border:'1px solid '+th.border,background:'transparent',color:th.t2,fontSize:'15px',fontWeight:600,cursor:'pointer'}},"\u2190 Prev"),
+      React.createElement('button',{onClick:function(){speak(sent.w.map(function(w){return w.h;}).join(""));},style:{padding:'10px 20px',borderRadius:'10px',border:'none',background:'linear-gradient(135deg,'+th.accent+','+th.accent2+')',color:'#fff',fontSize:'16px',fontWeight:700,cursor:'pointer'}},"\ud83d\udd0a"),
+      React.createElement('button',{onClick:next,style:{padding:'10px 16px',borderRadius:'10px',border:'1px solid '+th.accent+'30',background:th.accent+'10',color:th.accent,fontSize:'15px',fontWeight:700,cursor:'pointer'}},"\u2192 Next")
     )
   );
 }
 
-const root=ReactDOM.createRoot(document.getElementById('root'));
+var root=ReactDOM.createRoot(document.getElementById('root'));
 root.render(React.createElement(MindBridge));
 </script>
 </body>
