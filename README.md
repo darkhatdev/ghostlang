@@ -1,1 +1,1 @@
-# mindbridge
+# ghostlang
